@@ -1,36 +1,47 @@
 import os
 from dotenv import load_dotenv
-from infrastructure.brokers.alpaca_broker import AlpacaBroker
 
-# Load environment variables from .env file (recommended)
+from infrastructure.brokers.alpaca_broker import AlpacaBroker
+from core.strategy.simple_strategy import SimpleStrategy
+from core.engine.trading_engine import TradingEngine
+
+# Load .env file
 load_dotenv()
 
-print("=== STARTING FIRST TRADE ===")
+print("=== STARTING ENGINE TRADE ===")
 
-# 1. Load config (API keys from environment)
+# 1. Load API keys
 API_KEY = os.getenv("APCA_API_KEY_ID")
 SECRET_KEY = os.getenv("APCA_API_SECRET_KEY")
 
 print("Keys loaded:", API_KEY is not None, SECRET_KEY is not None)
 
-# Safety check (fail fast instead of silent None errors)
 if not API_KEY or not SECRET_KEY:
-    raise ValueError("Missing API keys. Check your .env or environment variables.")
+    raise ValueError("Missing API keys")
 
-# 2. Connect to broker (paper trading)
+# 2. Create broker (execution layer)
 broker = AlpacaBroker(API_KEY, SECRET_KEY)
 print("Broker connected")
 
-# 3. Submit order
-symbol = "SPY"
-qty = 1
+# 3. Create strategy (decision layer)
+strategy = SimpleStrategy(threshold=500)
 
-print(f"Submitting order: BUY {qty} {symbol}")
+# 4. Create engine (orchestration layer)
+engine = TradingEngine(strategy=strategy, broker=broker)
 
-response = broker.buy_market(symbol, qty)
+# 5. Fake market data (for now)
+market_data = {
+    "symbol": "SPY",
+    "price": 510
+}
 
-# 4. Output result
-print("ORDER RESPONSE:")
-print(response)
+print("Market data:", market_data)
+
+# 6. Run full system
+result = engine.run_once(market_data)
+
+# 7. Output result
+print("EXECUTION RESULT:")
+print(result)
 
 print("=== DONE ===")
