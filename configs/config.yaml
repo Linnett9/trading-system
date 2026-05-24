@@ -1,0 +1,7 @@
+broker:
+  name: alpaca
+  paper: true
+
+trade:
+  symbol: "AAPL"
+  quantity: 1
